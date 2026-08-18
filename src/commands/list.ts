@@ -18,7 +18,7 @@ export async function list(argv: string[]): Promise<void> {
   const { flags } = parse(argv, { ...COMMON_OPTIONS, limit: { type: "string" } }, "list");
   if (flags.help) return void process.stdout.write(listHelp);
 
-  const ctx = contextFrom(flags);
+  const ctx = await contextFrom(flags);
   const result = await callTool<RecentResult>("list_recent_memories", { limit: int(flags, "limit") }, ctx);
   if (wantsJson(flags)) return printJson(result);
   process.stdout.write(`${memoryList(result.results ?? [], "Nothing here yet.")}\n`);

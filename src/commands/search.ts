@@ -48,7 +48,7 @@ export async function search(argv: string[]): Promise<void> {
   );
   if (flags.help) return void process.stdout.write(searchHelp);
 
-  const ctx = contextFrom(flags);
+  const ctx = await contextFrom(flags);
   const query = positionals.join(" ").trim() || undefined;
 
   const result = await callTool<SearchResult>(

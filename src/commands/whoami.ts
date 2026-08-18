@@ -3,6 +3,7 @@ import { contextFrom, wantsJson } from "../context.js";
 import { callTool } from "../transport.js";
 import { printJson, table, bold, dim } from "../render.js";
 import { vaultRef, type VaultsResult } from "../wire.js";
+import { describeStoredCredential } from "../auth.js";
 
 export const whoamiHelp = `Show which vaults this token can reach.
 
@@ -14,13 +15,17 @@ export async function whoami(argv: string[]): Promise<void> {
   const { flags } = parse(argv, COMMON_OPTIONS, "whoami");
   if (flags.help) return void process.stdout.write(whoamiHelp);
 
-  const ctx = contextFrom(flags);
+  const ctx = await contextFrom(flags);
   const result = await callTool<VaultsResult>("list_vaults", {}, ctx);
   if (wantsJson(flags)) return printJson(result);
 
   const who = result.acting_as?.name;
   process.stdout.write(`${who ? `${bold(who)}  ` : ""}${dim(ctx.host)}\n`);
-  if (result.connection_scope) process.stdout.write(`${dim(`${result.connection_scope} connection`)}\n`);
+  const scope = result.connection_scope ? `${result.connection_scope} connection` : "";
+  process.stdout.write(`${dim([scope, describeStoredCredential()].filter(Boolean).join(" · "))}\n`);
+  if (result.connection_scope === "single-vault") {
+    process.stdout.write(dim("--vault is unavailable on a single-vault connection.\n"));
+  }
   process.stdout.write("\n");
 
   for (const team of result.teams ?? []) {

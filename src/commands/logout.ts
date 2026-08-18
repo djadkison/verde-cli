@@ -6,8 +6,9 @@ export const logoutHelp = `Remove the stored token.
 Usage
   verde logout
 
-Deletes the stored config — it does not revoke the token. If the token may have
-leaked, revoke it in Verde under your vault's MCP settings.
+Deletes the stored credentials — the browser session and any personal access
+token. It does not revoke them server-side: to do that, remove the connection
+in Verde under your vault's MCP settings.
 `;
 
 export async function logout(argv: string[]): Promise<void> {

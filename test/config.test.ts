@@ -1,9 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, statSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { mkdtempSync, statSync, writeFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { readConfig, writeConfig, clearConfig, configPath, resolveHost, resolveToken, DEFAULT_HOST } from "../src/config.js";
+import { readConfig, writeConfig, clearConfig, configPath, resolveHost, DEFAULT_HOST } from "../src/config.js";
+import { resolveCredentials } from "../src/auth.js";
 import { CliError } from "../src/errors.js";
 
 /** Each test gets its own config path, so none of them touch the real one. */
@@ -88,19 +89,44 @@ test("a trailing slash on the host never doubles up in the request path", () => 
   assert.equal(resolveHost("https://getverde.ai///"), "https://getverde.ai");
 });
 
-test("VERDE_TOKEN wins over the stored token, so CI never needs a config file", () => {
+test("VERDE_TOKEN wins over the stored token, so CI never needs a config file", async () => {
   sandbox();
-  writeConfig({ token: "vd_stored" });
-  assert.equal(resolveToken(), "vd_stored");
-  process.env.VERDE_TOKEN = "vd_env";
-  assert.equal(resolveToken(), "vd_env");
+  writeConfig({ token: "vrd_stored" });
+  assert.deepEqual(await resolveCredentials(DEFAULT_HOST), { token: "vrd_stored", kind: "pat" });
+  process.env.VERDE_TOKEN = "vrd_env";
+  assert.deepEqual(await resolveCredentials(DEFAULT_HOST), { token: "vrd_env", kind: "env" });
   delete process.env.VERDE_TOKEN;
 });
 
-test("no token at all points the user at login", () => {
+test("an OAuth session is preferred over a stale PAT in the same file", async () => {
   sandbox();
-  assert.throws(
-    () => resolveToken(),
+  writeConfig({
+    token: "vrd_pat",
+    oauth: { clientId: "c1", accessToken: "at_live", expiresAt: Date.now() + 3_600_000 },
+  });
+  assert.deepEqual(await resolveCredentials(DEFAULT_HOST), { token: "at_live", kind: "oauth" });
+});
+
+test("no token at all points the user at login", async () => {
+  sandbox();
+  await assert.rejects(
+    () => resolveCredentials(DEFAULT_HOST),
     (err: CliError) => err instanceof CliError && (err.hint ?? "").includes("verde login"),
   );
+});
+
+test("the config is replaced atomically, leaving no temp files behind", () => {
+  const path = sandbox();
+  writeConfig({ token: "vrd_one" });
+  writeConfig({ token: "vrd_two" });
+  const siblings = readdirSync(join(path, "..")).filter((f) => f.includes("tmp"));
+  assert.deepEqual(siblings, [], `stray temp files: ${siblings.join(", ")}`);
+  assert.equal(readConfig().token, "vrd_two");
+});
+
+test("a non-file config path is left alone rather than replaced", () => {
+  // /dev/null is a legitimate "no config" path; renaming over it would fail.
+  process.env.VERDE_CONFIG = "/dev/null";
+  writeConfig({ token: "vrd_x" });
+  assert.deepEqual(readConfig(), {});
 });

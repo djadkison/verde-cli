@@ -28,7 +28,7 @@ export async function get(argv: string[]): Promise<void> {
   if (!ids.length) throw new CliError("Missing document id.", { hint: "verde get <id> — ids come from `verde search`." });
   if (ids.length > 20) throw new CliError(`get accepts at most 20 ids at once (got ${ids.length}).`);
 
-  const ctx = contextFrom(flags);
+  const ctx = await contextFrom(flags);
   const args = ids.length === 1 ? { id: ids[0] } : { ids };
   const result = await callTool<GetMemoryResult>("get_memory", args, ctx);
 

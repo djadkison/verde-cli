@@ -27,18 +27,41 @@ Node 20.11 or newer. No runtime dependencies.
 
 ## Sign in
 
-Create a token in Verde — open your vault, go to **MCP**, and choose **Create
-token**. It is shown once.
-
 ```bash
 verde login
 ```
 
-The token is written to `~/.config/verde/config.json` with mode `0600`. For CI,
-skip the file entirely and set `VERDE_TOKEN` in the environment.
+That opens your browser to Verde's consent screen, where you choose what this
+CLI may reach — a single vault, or a whole team. Approving a team is what makes
+`--vault` work.
 
-A token is pinned to the vault that minted it. Team-wide connections, which let
-`--vault` select between vaults, arrive with OAuth login in v1.1.
+Over SSH, or anywhere without a browser:
+
+```bash
+verde login --no-browser     # prints the URL to open elsewhere
+```
+
+Prefer a token? `verde login --token <token>` still works — create one in Verde
+under your vault's **MCP** settings. A token is pinned to the vault that minted
+it, so `--vault` is unavailable on that path.
+
+Credentials are written to `~/.config/verde/config.json` with mode `0600`. For
+CI, skip the file entirely and set `VERDE_TOKEN`.
+
+<details>
+<summary>How the browser flow works</summary>
+
+Standard RFC 8252 native-app OAuth: the CLI registers itself as a public client
+("Verde CLI", which is the name that then shows up in Verde's activity feed),
+binds an ephemeral port on `127.0.0.1` for the redirect, and uses PKCE S256.
+Verde matches loopback redirects ignoring the port, so no fixed port is
+reserved. Nothing is sent anywhere but your Verde instance.
+
+Access tokens last 8 hours and refresh automatically; refresh tokens last 60
+days and rotate on every use. The rotated pair is written atomically under a
+lock, so several `verde` commands running at once refresh exactly once between
+them rather than racing and invalidating each other.
+</details>
 
 ## Use it
 
@@ -77,7 +100,7 @@ never two. If the body opens with a markdown heading, the title is taken from it
 
 | | |
 |---|---|
-| `verde login` / `logout` / `whoami` | Manage the stored token |
+| `verde login` / `logout` / `whoami` | Manage credentials |
 | `verde vaults` | Teams and vaults this connection reaches |
 | `verde buckets` | Buckets in a vault |
 | `verde bucket create <name>` | Create a bucket |
@@ -128,14 +151,14 @@ and without `--yes`, those commands refuse rather than assuming yes — a prompt
 that silently auto-answers in a pipeline is how a cron job archives something
 nobody meant to touch.
 
-Exit codes: `0` success, `1` a refused or invalid request, `2` a rejected token,
-`3` rate limited, `130` cancelled at a prompt.
+Exit codes: `0` success, `1` a refused or invalid request, `2` a rejected token
+or expired session, `3` rate limited, `130` cancelled at a prompt.
 
 ### Environment
 
 | | |
 |---|---|
-| `VERDE_TOKEN` | Access token; overrides the stored one |
+| `VERDE_TOKEN` | Access token; overrides stored credentials entirely |
 | `VERDE_HOST` | Verde instance (default `https://getverde.ai`) |
 | `VERDE_CONFIG` | Path to the config file |
 | `NO_COLOR` | Disable colour |

@@ -22,7 +22,7 @@ export async function open(argv: string[]): Promise<void> {
   if (flags.help) return void process.stdout.write(openHelp);
 
   const id = requireUuid(positionals[0], "document id");
-  const ctx = contextFrom(flags);
+  const ctx = await contextFrom(flags);
   const result = await callTool<GetMemoryResult>("get_memory", { id }, ctx);
   const url = documentOf(result)?.url;
   if (!url) throw new CliError("That document has no shareable URL.");

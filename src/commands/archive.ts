@@ -26,7 +26,7 @@ export async function archive(argv: string[]): Promise<void> {
   if (flags.help) return void process.stdout.write(archiveHelp);
 
   const id = requireUuid(positionals[0], "document id");
-  const ctx = contextFrom(flags);
+  const ctx = await contextFrom(flags);
 
   const current = await callTool<GetMemoryResult>("get_memory", { id }, ctx);
   const doc = documentOf(current);

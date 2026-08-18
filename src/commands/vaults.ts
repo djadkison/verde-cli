@@ -17,7 +17,7 @@ export async function vaults(argv: string[]): Promise<void> {
   const { flags } = parse(argv, COMMON_OPTIONS, "vaults");
   if (flags.help) return void process.stdout.write(vaultsHelp);
 
-  const ctx = contextFrom(flags);
+  const ctx = await contextFrom(flags);
   const result = await callTool<VaultsResult>("list_vaults", {}, ctx);
   if (wantsJson(flags)) return printJson(result);
 

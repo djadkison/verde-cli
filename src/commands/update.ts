@@ -76,7 +76,7 @@ export async function update(argv: string[]): Promise<void> {
     throw new CliError("Nothing to update.", { hint: "Pass at least one field — see `verde update --help`." });
   }
 
-  const ctx = contextFrom(flags);
+  const ctx = await contextFrom(flags);
   const result = await callTool<MemoryResult>(
     "update_memory",
     { id, expected_version: int(flags, "expected-version"), ...fields },

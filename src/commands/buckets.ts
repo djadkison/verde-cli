@@ -32,7 +32,7 @@ export async function buckets(argv: string[]): Promise<void> {
   const { flags } = parse(argv, COMMON_OPTIONS, "buckets");
   if (flags.help) return void process.stdout.write(bucketsHelp);
 
-  const ctx = contextFrom(flags);
+  const ctx = await contextFrom(flags);
   const result = await callTool<BucketsResult>("list_buckets", {}, ctx);
   if (wantsJson(flags)) return printJson(result);
 
@@ -74,7 +74,7 @@ export async function bucketCreate(argv: string[]): Promise<void> {
   const visibility = oneOf(str(flags, "default-visibility"), VISIBILITIES, "--default-visibility");
   if (!visibility) throw new CliError("--default-visibility is required.", { hint: `One of: ${VISIBILITIES.join(", ")}` });
 
-  const ctx = contextFrom(flags);
+  const ctx = await contextFrom(flags);
   const result = await callTool<{ result?: string; bucket?: { id?: string; name?: string } }>(
     "create_bucket",
     { name, description, reason, default_visibility: visibility },

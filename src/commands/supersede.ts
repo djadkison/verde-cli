@@ -67,7 +67,7 @@ export async function supersede(argv: string[]): Promise<void> {
     });
   }
 
-  const ctx = contextFrom(flags);
+  const ctx = await contextFrom(flags);
 
   // Name what is being replaced. "Supersede 8f3a…?" is not a question anyone
   // can answer correctly.

@@ -92,7 +92,7 @@ export async function save(argv: string[]): Promise<void> {
   // hardcoding either value here would flatten that.
   const publish = bool(flags, "publish") ? true : bool(flags, "draft") ? false : undefined;
 
-  const ctx = contextFrom(flags);
+  const ctx = await contextFrom(flags);
   const result = await callTool<MemoryResult>(
     "propose_memory",
     {

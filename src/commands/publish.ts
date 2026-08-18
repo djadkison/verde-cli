@@ -37,7 +37,7 @@ export async function publish(argv: string[]): Promise<void> {
   if (flags.help) return void process.stdout.write(publishHelp);
 
   const id = requireUuid(positionals[0], "document id");
-  const ctx = contextFrom(flags);
+  const ctx = await contextFrom(flags);
 
   // Read before write: the visibility decides whether this is a routine
   // publish or an irreversible push to the open web, and the user deserves to

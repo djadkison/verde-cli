@@ -1,6 +1,6 @@
 {
   "name": "verde-cli",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Command-line access to your Verde vaults — search, read, and write your team's shared memory from the terminal.",
   "keywords": ["verde", "cli", "mcp", "knowledge-base", "memory", "notes"],
   "homepage": "https://github.com/djadkison/verde-cli#readme",
