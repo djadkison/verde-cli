@@ -37,6 +37,25 @@ test("a missing config reads as empty rather than throwing", () => {
   assert.deepEqual(readConfig(), {});
 });
 
+test("an empty config file reads as no config, not as corruption", () => {
+  // A truncated write, a bare `touch`, or VERDE_CONFIG=/dev/null must behave
+  // like a fresh install rather than failing every command.
+  const path = sandbox();
+  mkdirSync(join(path, ".."), { recursive: true });
+  for (const contents of ["", "   ", "\n\n"]) {
+    writeFileSync(path, contents);
+    assert.deepEqual(readConfig(), {}, `expected ${JSON.stringify(contents)} to read as {}`);
+  }
+});
+
+test("/dev/null works as a config path, which is how scripts opt out", () => {
+  process.env.VERDE_CONFIG = "/dev/null";
+  delete process.env.VERDE_TOKEN;
+  delete process.env.VERDE_HOST;
+  assert.deepEqual(readConfig(), {});
+  assert.equal(resolveHost(), DEFAULT_HOST);
+});
+
 test("a corrupt config says which file to delete", () => {
   const path = sandbox();
   mkdirSync(join(path, ".."), { recursive: true });

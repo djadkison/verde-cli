@@ -27,8 +27,13 @@ export function configPath(): string {
 export function readConfig(): Config {
   const path = configPath();
   if (!existsSync(path)) return {};
+  // An empty file is "no config", not a broken one: a truncated write, a bare
+  // `touch`, or VERDE_CONFIG=/dev/null should all behave like a fresh install
+  // rather than failing every command until the user deletes something.
+  const raw = readFileSync(path, "utf8").trim();
+  if (!raw) return {};
   try {
-    const parsed: unknown = JSON.parse(readFileSync(path, "utf8"));
+    const parsed: unknown = JSON.parse(raw);
     if (!parsed || typeof parsed !== "object") return {};
     return parsed as Config;
   } catch {

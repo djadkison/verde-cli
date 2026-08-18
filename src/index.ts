@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import { isCliError } from "./errors.js";
 import { login, loginHelp } from "./commands/login.js";
 import { logout, logoutHelp } from "./commands/logout.js";
@@ -14,7 +15,13 @@ import { publish, publishHelp } from "./commands/publish.js";
 import { supersede, supersedeHelp } from "./commands/supersede.js";
 import { archive, archiveHelp } from "./commands/archive.js";
 
-const VERSION = "0.1.0";
+/**
+ * Read rather than hardcoded, so `verde --version` cannot drift from the
+ * version npm actually published. Resolves to the package root from both
+ * src/index.ts and the bundled dist/index.js, and package.json ships in the
+ * tarball.
+ */
+const VERSION = (createRequire(import.meta.url)("../package.json") as { version: string }).version;
 
 type Command = {
   run: (argv: string[]) => Promise<void>;
