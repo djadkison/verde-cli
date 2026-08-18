@@ -1,0 +1,29 @@
+{
+  "name": "verde-cli",
+  "version": "0.1.0",
+  "description": "Command-line access to your Verde vaults — search, read, and write your team's shared memory from the terminal.",
+  "keywords": ["verde", "cli", "mcp", "knowledge-base", "memory", "notes"],
+  "homepage": "https://github.com/djadkison/verde-cli#readme",
+  "bugs": { "url": "https://github.com/djadkison/verde-cli/issues" },
+  "repository": { "type": "git", "url": "git+https://github.com/djadkison/verde-cli.git" },
+  "license": "MIT",
+  "author": "djadkison",
+  "type": "module",
+  "bin": { "verde": "./dist/index.js" },
+  "files": ["dist", "README.md", "LICENSE"],
+  "engines": { "node": ">=20.11" },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "test:live": "node --import tsx --test test/live.test.ts",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

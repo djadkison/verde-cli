@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ["20.11", "22", "24"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      # Unit tests only: the live and e2e suites need a real vault and skip
+      # themselves without VERDE_TOKEN.
+      - run: npm test
+      - run: npm run build
+      - name: The built binary runs
+        run: node dist/index.js --version
