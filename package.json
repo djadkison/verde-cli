@@ -9,7 +9,7 @@
   "license": "MIT",
   "author": "djadkison",
   "type": "module",
-  "bin": { "verde": "./dist/index.js" },
+  "bin": { "verde": "dist/index.js" },
   "files": ["dist", "README.md", "LICENSE"],
   "engines": { "node": ">=20.11" },
   "scripts": {
